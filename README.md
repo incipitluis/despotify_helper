@@ -46,10 +46,15 @@ No intermediate step: the Exportify format is the input format.
 
 ### Requirements
 
-- macOS (tested) or Linux. On Windows it should work with minor path adjustments.
+- macOS, Linux, or Windows (each with its own script — see below).
 - `python3` (3.9 or higher; only uses stdlib).
 - `yt-dlp` in PATH.
 - `ffmpeg` in PATH (used by yt-dlp to extract and transcode to MP3).
+
+### Which script do I run?
+
+- **macOS / Linux** → `despotify_helper.py`
+- **Windows** → `despotify_helper_windows.py` (same logic, with adjustments for Windows: hides the `yt-dlp` console window via `CREATE_NO_WINDOW`, handles reserved filenames like `CON`, `PRN`, `NUL`, strips trailing dots/spaces from folder names, and reads UTF-8 CSV with BOM via `utf-8-sig`).
 
 ### Installation
 
@@ -59,11 +64,28 @@ On macOS with Homebrew:
 brew install yt-dlp ffmpeg
 ```
 
+On Linux, use your package manager (`apt install yt-dlp ffmpeg`, `pacman -S yt-dlp ffmpeg`, etc.).
+
+On Windows with [winget](https://learn.microsoft.com/en-us/windows/package-manager/winget/):
+
+```powershell
+winget install yt-dlp.yt-dlp
+winget install Gyan.FFmpeg
+```
+
+Or with [Chocolatey](https://chocolatey.org/):
+
+```powershell
+choco install yt-dlp ffmpeg
+```
+
 Then clone or copy this repo wherever you like. There are no Python dependencies to install: the script only imports stdlib modules and calls `yt-dlp` via subprocess.
 
-> Note: installing `yt-dlp` from Homebrew (instead of `pip install yt-dlp`) brings the binary with its own embedded Python and updates with `brew upgrade`. YouTube extractors change often, so keeping the version up to date matters.
+> Note: installing `yt-dlp` from a system package manager (Homebrew, winget, Chocolatey) instead of `pip install yt-dlp` brings the binary with its own embedded Python and updates with the package manager. YouTube extractors change often, so keeping the version up to date matters.
 
 ### Usage
+
+macOS / Linux:
 
 ```sh
 python3 despotify_helper.py <path_to_csv>
@@ -73,6 +95,18 @@ Example:
 
 ```sh
 python3 despotify_helper.py ~/Downloads/Favorite_albums.csv
+```
+
+Windows (PowerShell or `cmd`):
+
+```powershell
+python despotify_helper_windows.py <path_to_csv>
+```
+
+Example:
+
+```powershell
+python despotify_helper_windows.py %USERPROFILE%\Downloads\Favorite_albums.csv
 ```
 
 The script prints track-by-track progress and, at the end, a summary with downloaded / already existing / failed, plus the list of failures with their reason.
@@ -93,6 +127,8 @@ If a song fails the first time (typically due to a transient YouTube error), jus
 
 ### Output structure
 
+macOS / Linux:
+
 ```
 ~/Music/despotify_helper/
   <Artist>/
@@ -100,13 +136,23 @@ If a song fails the first time (typically due to a transient YouTube error), jus
       <Track>.mp3
 ```
 
+Windows:
+
+```
+%USERPROFILE%\Music\despotify_helper\
+  <Artist>\
+    <Album>\
+      <Track>.mp3
+```
+
 Naming rules:
 
 - Folder artist: if the `Artist Name(s)` field has multiple comma-separated artists, only the first one is used (avoids duplicate folders like `Artist A, Artist B`). The YouTube search does use the full list, to improve matching.
 - Invalid filename characters (`/`, `\`, `:`, `*`, `?`, `"`, `<`, `>`, `|`, NUL) are replaced with `_`.
+- On Windows, trailing dots/spaces are stripped and reserved names (`CON`, `PRN`, `AUX`, `NUL`, `COM1`–`COM9`, `LPT1`–`LPT9`) are prefixed with `_`.
 - Accents, ñ, apostrophes and other Unicode are preserved.
 
-MP3s are generated at 192 kbps. If you want different quality, change `--audio-quality 192K` in `despotify_helper.py`.
+MP3s are generated at 192 kbps. If you want different quality, change `--audio-quality 192K` in the script you're using.
 
 ### Common errors and how to solve them
 
@@ -213,10 +259,15 @@ No hay paso intermedio: el formato Exportify es el formato de entrada.
 
 ### Requisitos
 
-- macOS (probado) o Linux. En Windows debería funcionar con ajustes menores de rutas.
+- macOS, Linux o Windows (cada uno con su propio script — ver abajo).
 - `python3` (3.9 o superior; solo usa la stdlib).
 - `yt-dlp` en el PATH.
 - `ffmpeg` en el PATH (lo usa yt-dlp para extraer y transcodificar a MP3).
+
+### ¿Qué script ejecuto?
+
+- **macOS / Linux** → `despotify_helper.py`
+- **Windows** → `despotify_helper_windows.py` (misma lógica, con ajustes propios de Windows: oculta la ventana de consola de `yt-dlp` mediante `CREATE_NO_WINDOW`, gestiona nombres reservados como `CON`, `PRN`, `NUL`, recorta puntos y espacios al final de los nombres de carpeta, y lee el CSV en UTF-8 con BOM mediante `utf-8-sig`).
 
 ### Instalación
 
@@ -226,11 +277,28 @@ En macOS con Homebrew:
 brew install yt-dlp ffmpeg
 ```
 
+En Linux, con el gestor de paquetes correspondiente (`apt install yt-dlp ffmpeg`, `pacman -S yt-dlp ffmpeg`, etc.).
+
+En Windows con [winget](https://learn.microsoft.com/es-es/windows/package-manager/winget/):
+
+```powershell
+winget install yt-dlp.yt-dlp
+winget install Gyan.FFmpeg
+```
+
+O con [Chocolatey](https://chocolatey.org/):
+
+```powershell
+choco install yt-dlp ffmpeg
+```
+
 Después clona o copia este repo donde quieras. No hay dependencias Python que instalar: el script solo importa módulos de la biblioteca estándar y llama a `yt-dlp` por subprocess.
 
-> Nota: instalar `yt-dlp` desde Homebrew (en vez de `pip install yt-dlp`) trae el binario con su propio Python embebido y se actualiza con `brew upgrade`. Los extractors de YouTube cambian a menudo, por lo que tener la versión al día es importante.
+> Nota: instalar `yt-dlp` desde un gestor de paquetes del sistema (Homebrew, winget, Chocolatey) en lugar de `pip install yt-dlp` trae el binario con su propio Python embebido y se actualiza con el gestor. Los extractors de YouTube cambian a menudo, por lo que tener la versión al día es importante.
 
 ### Uso
+
+macOS / Linux:
 
 ```sh
 python3 despotify_helper.py <ruta_al_csv>
@@ -240,6 +308,18 @@ Ejemplo:
 
 ```sh
 python3 despotify_helper.py ~/Downloads/Discos_favoritos.csv
+```
+
+Windows (PowerShell o `cmd`):
+
+```powershell
+python despotify_helper_windows.py <ruta_al_csv>
+```
+
+Ejemplo:
+
+```powershell
+python despotify_helper_windows.py %USERPROFILE%\Downloads\Discos_favoritos.csv
 ```
 
 El script imprime el progreso pista a pista y, al final, un resumen con descargadas / ya existentes / fallidas, más la lista de fallos con su motivo.
@@ -260,6 +340,8 @@ Si una canción falla la primera vez (típicamente por un error transitorio de Y
 
 ### Estructura de salida
 
+macOS / Linux:
+
 ```
 ~/Music/despotify_helper/
   <Artista>/
@@ -267,13 +349,23 @@ Si una canción falla la primera vez (típicamente por un error transitorio de Y
       <Canción>.mp3
 ```
 
+Windows:
+
+```
+%USERPROFILE%\Music\despotify_helper\
+  <Artista>\
+    <Álbum>\
+      <Canción>.mp3
+```
+
 Reglas de nombrado:
 
 - Artista de la carpeta: si el campo `Artist Name(s)` tiene varios artistas separados por coma, se usa solo el primero (evita carpetas duplicadas tipo `Artista A, Artista B`). La búsqueda en YouTube sí usa la lista completa, para mejorar el matching.
 - Caracteres inválidos en nombre de fichero (`/`, `\`, `:`, `*`, `?`, `"`, `<`, `>`, `|`, NUL) se reemplazan por `_`.
+- En Windows, además se recortan puntos/espacios al final del nombre y los nombres reservados (`CON`, `PRN`, `AUX`, `NUL`, `COM1`–`COM9`, `LPT1`–`LPT9`) se prefijan con `_`.
 - Se preservan acentos, eñes, apóstrofes y demás Unicode.
 
-Los MP3 se generan a 192 kbps. Si quieres otra calidad, cambia `--audio-quality 192K` en `despotify_helper.py`.
+Los MP3 se generan a 192 kbps. Si quieres otra calidad, cambia `--audio-quality 192K` en el script que estés usando.
 
 ### Errores frecuentes y cómo resolverlos
 
